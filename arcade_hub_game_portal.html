@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Nexus - Web Arcade & Game Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#a855f7',
+                            600: '#9333ea',
+                            700: '#7e22ce',
+                            neon: '#00f3ff',
+                            pink: '#ff007f',
+                            yellow: '#ffbe0b',
+                            bg: '#0a0a12',
+                            card: '#121225',
+                            border: '#232342'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        sans: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0a12;
+            color: #e2e8f0;
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Neon Glow Effects */
+        .neon-border {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.3), inset 0 0 15px rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+        }
+
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.5);
+        }
+
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.7);
+        }
+
+        .neon-text-pink {
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.7);
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 25px -5px rgba(168, 85, 247, 0.4), 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0a12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #232342;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9333ea;
+        }
+
+        /* Scanline Overlay Effect for Arcade Look */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-600 selection:text-white">
+
+    <!-- TOP NAVIGATION -->
+    <header class="sticky top-0 z-30 bg-brand-bg/90 backdrop-blur-md border-b border-brand-border px-4 lg:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo -->
+            <div class="flex items-center gap-3 cursor-pointer" onclick="filterCategory('all')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-brand-neon to-brand-pink flex items-center justify-center text-white text-xl shadow-lg shadow-brand-600/40">
+                    <i class="fa-solid font-bold fa-gamepad"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-neon to-brand-500">
+                        ARCADE<span class="text-brand-pink">NEXUS</span>
+                    </h1>
+                    <p class="text-xs text-gray-400 -mt-1 tracking-widest uppercase">GitHub Pages Web Portal</p>
+                </div>
+            </div>
+
+            <!-- Global Search -->
+            <div class="flex-1 max-w-md min-w-[240px]">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Search arcade games or custom titles..." 
+                        class="w-full pl-10 pr-4 py-2 bg-brand-card/80 border border-brand-border rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-neon focus:ring-1 focus:ring-brand-neon transition-all">
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openModal('addGameModal')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-brand-pink hover:from-brand-500 hover:to-brand-600 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-brand-600/30 transition-all hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-plus"></i> <span class="hidden sm:inline">Add Game</span>
+                </button>
+
+                <button onclick="openModal('githubGuideModal')" class="px-3.5 py-2 rounded-xl bg-brand-card border border-brand-border hover:border-brand-neon text-gray-300 hover:text-brand-neon text-sm font-semibold flex items-center gap-2 transition-all">
+                    <i class="fa-brands fa-github text-lg"></i> <span class="hidden md:inline">GitHub Setup</span>
+                </button>
+
+                <button onclick="openModal('importExportModal')" title="Backup / Restore Config" class="p-2.5 rounded-xl bg-brand-card border border-brand-border hover:border-brand-500 text-gray-300 hover:text-white transition-all">
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 flex-1 w-full space-y-8">
+
+        <!-- HERO SPOTLIGHT BANNER -->
+        <section class="relative rounded-3xl overflow-hidden border border-brand-border bg-gradient-to-r from-brand-card via-purple-950/40 to-brand-card p-6 md:p-10 shadow-2xl">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-neon/10 via-transparent to-transparent pointer-events-none"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="space-y-3 max-w-xl text-center md:text-left">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-neon/10 border border-brand-neon/30 text-brand-neon text-xs font-semibold tracking-wider uppercase">
+                        <i class="fa-solid fa-fire text-brand-yellow"></i> Featured Arcade Classic
+                    </span>
+                    <h2 class="text-3xl md:text-4xl font-extrabold font-orbitron tracking-tight text-white">
+                        CYBER PONG <span class="text-brand-neon">NEON 2088</span>
+                    </h2>
+                    <p class="text-gray-300 text-sm md:text-base leading-relaxed">
+                        Experience classic 2-player or AI-driven pong reimagined with synthwave visual effects, vector glow trails, and adaptive computer difficulty.
+                    </p>
+                    <div class="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-4">
+                        <button onclick="launchGame('cyber-pong')" class="px-6 py-3 rounded-xl bg-brand-neon text-black font-extrabold font-orbitron tracking-wider flex items-center gap-2 hover:bg-cyan-300 transition-all shadow-lg shadow-brand-neon/30 hover:scale-105 active:scale-95">
+                            <i class="fa-solid fa-play"></i> PLAY NOW
+                        </button>
+                        <button onclick="toggleFavorite('cyber-pong')" id="heroFavBtn" class="px-4 py-3 rounded-xl bg-brand-card border border-brand-border hover:border-brand-pink text-gray-300 hover:text-brand-pink transition-all">
+                            <i class="fa-regular fa-heart text-lg" id="heroFavIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Banner Visual Graphic -->
+                <div class="relative w-full md:w-80 h-48 rounded-2xl border border-brand-border/60 bg-black/50 overflow-hidden flex items-center justify-center group cursor-pointer" onclick="launchGame('cyber-pong')">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
+                    <!-- Animated Canvas Preview background -->
+                    <div class="absolute inset-0 opacity-60 flex items-center justify-between px-8 py-4">
+                        <div class="w-3 h-16 bg-brand-neon rounded-full shadow-[0_0_12px_#00f3ff]"></div>
+                        <div class="w-4 h-4 bg-brand-pink rounded-full shadow-[0_0_12px_#ff007f] animate-ping"></div>
+                        <div class="w-3 h-16 bg-purple-500 rounded-full shadow-[0_0_12px_#a855f7]"></div>
+                    </div>
+                    <span class="z-20 w-14 h-14 rounded-full bg-brand-neon/90 text-black flex items-center justify-center text-xl shadow-xl group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-play pl-1"></i>
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CATEGORY FILTERS & CONTROLS -->
+        <section class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-brand-border pb-4">
+            
+            <!-- Filter Tabs -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-none" id="categoryContainer">
+                <!-- Dynamically Rendered Category Pills -->
+            </div>
+
+            <!-- Count Stats -->
+            <div class="text-xs font-semibold text-gray-400 flex items-center justify-between sm:justify-end gap-3">
+                <span id="gameCountBadge" class="px-2.5 py-1 rounded-md bg-brand-card border border-brand-border text-brand-neon">
+                    0 Games Listed
+                </span>
+            </div>
+        </section>
+
+        <!-- GAME CARDS GRID -->
+        <section>
+            <div id="gamesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Dynamic Game Cards Inserted Here -->
+            </div>
+
+            <!-- Empty State Display -->
+            <div id="noGamesFound" class="hidden py-16 text-center space-y-4">
+                <div class="w-16 h-16 rounded-full bg-brand-card border border-brand-border mx-auto flex items-center justify-center text-2xl text-gray-500">
+                    <i class="fa-solid fa-ghost"></i>
+                </div>
+                <h3 class="text-xl font-bold font-orbitron text-gray-300">No Arcade Games Found</h3>
+                <p class="text-gray-500 text-sm max-w-sm mx-auto">Try clearing your search query or add a new custom game to your catalog!</p>
+                <button onclick="openModal('addGameModal')" class="px-4 py-2 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-500 transition-all">
+                    + Add New Custom Game
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-brand-border bg-brand-card/40 py-8 px-4 lg:px-8 mt-12 text-center text-sm text-gray-500">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-cube text-brand-neon"></i>
+                <span class="font-orbitron font-bold text-gray-300">ARCADE NEXUS</span>
+                <span>— GitHub Pages Game Hub</span>
+            </div>
+            <p>Designed for HTML5, Canvas & Local Hosted GitHub Web Games</p>
+            <div class="flex items-center gap-4 text-xs">
+                <button onclick="openModal('githubGuideModal')" class="hover:text-brand-neon transition-colors">GitHub Deployment Guide</button>
+                <span>•</span>
+                <button onclick="resetToDefaults()" class="hover:text-brand-pink transition-colors">Reset Arcade Data</button>
+            </div>
+        </div>
+    </footer>
+
+    <!-- GAME PLAYER MODAL -->
+    <div id="playerModal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex-col justify-between overflow-hidden">
+        
+        <!-- Player Header Control Bar -->
+        <div class="bg-brand-card/90 border-b border-brand-border px-4 py-3 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span id="playerBadge" class="px-2.5 py-0.5 rounded-full bg-brand-600/30 border border-brand-600 text-brand-neon text-xs font-bold uppercase">
+                    Built-in
+                </span>
+                <h3 id="playerTitle" class="text-lg md:text-xl font-bold font-orbitron text-white truncate">
+                    Game Title
+                </h3>
+            </div>
+
+            <!-- Action Toolbar -->
+            <div class="flex items-center gap-2">
+                <button onclick="reloadPlayer()" title="Restart Game" class="p-2 rounded-lg bg-brand-bg hover:bg-brand-border text-gray-300 hover:text-white transition-all text-sm">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button onclick="toggleFullscreen()" title="Toggle Fullscreen" class="p-2 rounded-lg bg-brand-bg hover:bg-brand-border text-gray-300 hover:text-white transition-all text-sm">
+                    <i class="fa-solid fa-expand"></i>
+                </button>
+                <button onclick="requestPointerLock()" title="Capture Mouse Cursor" class="hidden sm:inline-flex p-2 rounded-lg bg-brand-bg hover:bg-brand-border text-gray-300 hover:text-white transition-all text-sm">
+                    <i class="fa-solid fa-mouse-pointer"></i>
+                </button>
+                <button onclick="openExternalTab()" title="Open Direct Game URL" class="p-2 rounded-lg bg-brand-bg hover:bg-brand-border text-gray-300 hover:text-white transition-all text-sm">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </button>
+                <button onclick="closePlayer()" title="Close Game" class="p-2 rounded-lg bg-brand-pink/20 hover:bg-brand-pink text-brand-pink hover:text-white transition-all text-sm font-bold ml-2">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Screen / Screen Area -->
+        <div class="flex-1 relative bg-black flex items-center justify-center p-2 md:p-4 overflow-hidden">
+            <!-- Canvas Container for Native JS Games -->
+            <div id="canvasViewport" class="w-full h-full max-w-5xl max-h-[80vh] relative flex items-center justify-center rounded-xl overflow-hidden border border-brand-border shadow-2xl bg-black">
+                <canvas id="gameCanvas" class="max-w-full max-h-full block object-contain"></canvas>
+            </div>
+
+            <!-- Iframe Container for External / GitHub Relative Games -->
+            <iframe id="gameIframe" class="w-full h-full max-w-6xl max-h-[85vh] rounded-xl border border-brand-border shadow-2xl bg-black hidden" allow="fullscreen; autoplay; gamepad"></iframe>
+        </div>
+
+        <!-- Player Controls & Instructions Footer -->
+        <div class="bg-brand-card/90 border-t border-brand-border px-4 py-2.5 text-xs text-gray-400 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-200">Controls:</span>
+                <span id="playerControlsInfo" class="text-brand-neon">Keyboard / Arrow Keys</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>Tip: Press <kbd class="px-1.5 py-0.5 bg-brand-bg border border-brand-border rounded text-gray-200">ESC</kbd> to exit fullscreen</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD CUSTOM GAME MODAL -->
+    <div id="addGameModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-3xl max-w-lg w-full p-6 md:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closeModal('addGameModal')" class="absolute top-5 right-5 text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="space-y-1">
+                <h3 class="text-2xl font-bold font-orbitron text-white flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-brand-neon"></i> Add Custom Game
+                </h3>
+                <p class="text-xs text-gray-400">Link your GitHub repo games (`./games/my-game/index.html`) or web games.</p>
+            </div>
+
+            <form id="addGameForm" onsubmit="handleAddGame(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Game Title</label>
+                    <input type="text" id="customTitle" required placeholder="e.g., Pixel Quest" 
+                        class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Category</label>
+                        <select id="customCategory" class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                            <option value="Arcade">Arcade</option>
+                            <option value="Action">Action</option>
+                            <option value="Retro">Retro</option>
+                            <option value="Puzzle">Puzzle</option>
+                            <option value="Custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Icon Style</label>
+                        <select id="customIcon" class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                            <option value="fa-gamepad">Gamepad</option>
+                            <option value="fa-rocket">Rocket</option>
+                            <option value="fa-ghost">Ghost</option>
+                            <option value="fa-skull">Skull</option>
+                            <option value="fa-bolt">Lightning</option>
+                            <option value="fa-trophy">Trophy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Game Source Path or Web URL</label>
+                    <input type="text" id="customUrl" required placeholder="./games/my-game/index.html OR https://..." 
+                        class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                    <p class="text-[11px] text-gray-500 mt-1">For GitHub Pages: Place game files in `/games/name/` and use relative path `./games/name/index.html`</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Thumbnail Cover Image URL (Optional)</label>
+                    <input type="url" id="customThumb" placeholder="https://example.com/cover.png" 
+                        class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-1">Controls Guide</label>
+                    <input type="text" id="customControls" placeholder="e.g. Arrow keys to Move, Space to Jump" 
+                        class="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border text-white text-sm focus:outline-none focus:border-brand-neon">
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeModal('addGameModal')" class="px-4 py-2.5 rounded-xl bg-brand-bg hover:bg-brand-border text-gray-300 text-sm font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-brand-neon text-black font-bold font-orbitron text-sm hover:opacity-90 transition-all shadow-lg">
+                        Save Game
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- IMPORT / EXPORT CONFIG MODAL -->
+    <div id="importExportModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-3xl max-w-md w-full p-6 md:p-8 space-y-6 shadow-2xl relative">
+            <button onclick="closeModal('importExportModal')" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="space-y-1">
+                <h3 class="text-2xl font-bold font-orbitron text-white flex items-center gap-2">
+                    <i class="fa-solid fa-database text-brand-neon"></i> Manage Arcade Data
+                </h3>
+                <p class="text-xs text-gray-400">Export your arcade directory configuration JSON or restore custom lists.</p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="exportGameData()" class="w-full py-3 px-4 rounded-xl bg-brand-bg border border-brand-border hover:border-brand-neon flex items-center justify-between text-white font-semibold text-sm transition-all group">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-download text-brand-neon group-hover:scale-110 transition-transform"></i>
+                        Export Games List (JSON)
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>
+                </button>
+
+                <label class="w-full py-3 px-4 rounded-xl bg-brand-bg border border-brand-border hover:border-brand-neon flex items-center justify-between text-white font-semibold text-sm cursor-pointer transition-all group">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-upload text-brand-pink group-hover:scale-110 transition-transform"></i>
+                        Import Games List (.json)
+                    </span>
+                    <input type="file" id="importJsonInput" accept=".json" onchange="importGameData(event)" class="hidden">
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>
+                </label>
+
+                <button onclick="resetToDefaults()" class="w-full py-3 px-4 rounded-xl bg-red-950/30 border border-red-900/50 hover:bg-red-900/40 flex items-center justify-between text-red-300 font-semibold text-sm transition-all">
+                    <span class="flex items-center gap-3">
+                        <i class="fa-solid fa-trash-arrow-up text-red-400"></i>
+                        Reset to Default Built-in Games
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GITHUB PAGES SETUP GUIDE MODAL -->
+    <div id="githubGuideModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('githubGuideModal')" class="absolute top-5 right-5 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="space-y-1">
+                <h3 class="text-2xl font-bold font-orbitron text-white flex items-center gap-2">
+                    <i class="fa-brands fa-github text-brand-neon"></i> GitHub Pages Deployment Guide
+                </h3>
+                <p class="text-xs text-gray-400">Step-by-step instructions for hosting this portal and your custom web games.</p>
+            </div>
+
+            <!-- Visual File Directory Tree -->
+            <div class="bg-brand-bg p-4 rounded-2xl border border-brand-border font-mono text-xs text-gray-300 space-y-1">
+                <p class="text-brand-neon font-bold">📁 my-game-arcade-repository/</p>
+                <p class="pl-4">├── 📄 index.html <span class="text-gray-500">(This portal file!)</span></p>
+                <p class="pl-4">└── 📁 games/</p>
+                <p class="pl-8">├── 📁 space-shooter/</p>
+                <p class="pl-12">└── 📄 index.html</p>
+                <p class="pl-8">└── 📁 retro-platformer/</p>
+                <p class="pl-12">└── 📄 index.html</p>
+            </div>
+
+            <!-- Steps List -->
+            <div class="space-y-4 text-sm text-gray-300">
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-brand-neon text-black font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">1</div>
+                    <div>
+                        <h4 class="font-bold text-white">Upload `index.html` to GitHub</h4>
+                        <p class="text-xs text-gray-400">Create a GitHub repository, upload this `index.html` file into the root folder, and commit changes.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-brand-neon text-black font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">2</div>
+                    <div>
+                        <h4 class="font-bold text-white">Add Your Custom Game Folders</h4>
+                        <p class="text-xs text-gray-400">Create a folder named <code class="text-brand-neon">/games/</code> in your repo. Add subfolders for each game containing an <code class="text-brand-neon">index.html</code> file.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-brand-neon text-black font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">3</div>
+                    <div>
+                        <h4 class="font-bold text-white">Enable GitHub Pages</h4>
+                        <p class="text-xs text-gray-400">Go to <strong>Repo Settings -> Pages</strong>. Set Source to <strong>Deploy from a branch</strong>, select <code class="text-brand-neon">main</code> branch <code class="text-brand-neon">/(root)</code>, and click <strong>Save</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 rounded-full bg-brand-neon text-black font-bold flex items-center justify-center text-xs shrink-0 mt-0.5">4</div>
+                    <div>
+                        <h4 class="font-bold text-white">Link Games in Arcade Nexus</h4>
+                        <p class="text-xs text-gray-400">Click <strong>"+ Add Game"</strong> on this website and type relative paths such as <code class="text-brand-neon">./games/space-shooter/index.html</code>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 text-right">
+                <button onclick="closeModal('githubGuideModal')" class="px-5 py-2 rounded-xl bg-brand-neon text-black font-bold text-sm">
+                    Got It!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DEFAULT BUILT-IN GAMES DATA
+        const DEFAULT_GAMES = [
+            {
+                id: 'cyber-pong',
+                title: 'Cyber Pong Neon 2088',
+                category: 'Arcade',
+                icon: 'fa-table-tennis-paddle-ball',
+                controls: 'W / S or Arrow Keys to Move Paddle',
+                builtIn: true,
+                favorite: true,
+                thumb: '',
+                badge: 'Canvas Native'
+            },
+            {
+                id: 'retro-snake',
+                title: 'Retro Neon Snake',
+                category: 'Retro',
+                icon: 'fa-staff-snake',
+                controls: 'Arrow Keys or WASD to Change Direction',
+                builtIn: true,
+                favorite: false,
+                thumb: '',
+                badge: 'Canvas Native'
+            },
+            {
+                id: 'space-defender',
+                title: 'Space Invader Defense',
+                category: 'Action',
+                icon: 'fa-rocket',
+                controls: 'A/D or Left/Right Arrows to Move, SPACE to Shoot',
+                builtIn: true,
+                favorite: true,
+                thumb: '',
+                badge: 'Canvas Native'
+            },
+            {
+                id: 'neon-breakout',
+                title: 'Neon Brick Breakout',
+                category: 'Arcade',
+                icon: 'fa-cubes-stacked',
+                controls: 'Mouse or Left/Right Arrow Keys to Control Paddle',
+                builtIn: true,
+                favorite: false,
+                thumb: '',
+                badge: 'Canvas Native'
+            }
+        ];
+
+        // GLOBAL APP STATE
+        let gamesList = [];
+        let activeCategory = 'all';
+        let currentSearchQuery = '';
+        let currentGame = null;
+        let activeAnimFrame = null;
+
+        // INITIALIZATION ON LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            loadGamesList();
+            renderCategories();
+            renderGamesGrid();
+        });
+
+        function loadGamesList() {
+            const stored = localStorage.getItem('arcade_nexus_games');
+            if (stored) {
+                try {
+                    gamesList = JSON.parse(stored);
+                } catch (e) {
+                    gamesList = [...DEFAULT_GAMES];
+                }
+            } else {
+                gamesList = [...DEFAULT_GAMES];
+                saveGamesToStorage();
+            }
+        }
+
+        function saveGamesToStorage() {
+            localStorage.setItem('arcade_nexus_games', JSON.stringify(gamesList));
+        }
+
+        function renderCategories() {
+            const categories = ['all', 'Favorites', 'Arcade', 'Action', 'Retro', 'Custom'];
+            const container = document.getElementById('categoryContainer');
+            
+            container.innerHTML = categories.map(cat => {
+                const isActive = activeCategory === cat;
+                const label = cat === 'all' ? 'All Games' : cat;
+                const icon = cat === 'Favorites' ? 'fa-heart text-brand-pink' : (cat === 'all' ? 'fa-border-all' : 'fa-gamepad');
+
+                return `
+                    <button onclick="filterCategory('${cat}')" 
+                        class="px-4 py-2 rounded-xl text-xs font-bold font-orbitron tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+                            isActive 
+                            ? 'bg-brand-600 text-white border-brand-neon shadow-lg shadow-brand-600/30' 
+                            : 'bg-brand-card text-gray-400 border-brand-border hover:border-brand-500 hover:text-white'
+                        }">
+                        <i class="fa-solid ${icon}"></i> ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function filterCategory(cat) {
+            activeCategory = cat;
+            renderCategories();
+            renderGamesGrid();
+        }
+
+        function handleSearch() {
+            currentSearchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderGamesGrid();
+        }
+
+        function renderGamesGrid() {
+            const grid = document.getElementById('gamesGrid');
+            const emptyState = document.getElementById('noGamesFound');
+            const countBadge = document.getElementById('gameCountBadge');
+
+            const filtered = gamesList.filter(game => {
+                const matchesCategory = 
+                    activeCategory === 'all' ? true :
+                    activeCategory === 'Favorites' ? game.favorite :
+                    activeCategory === 'Custom' ? !game.builtIn :
+                    game.category.toLowerCase() === activeCategory.toLowerCase();
+
+                const matchesSearch = game.title.toLowerCase().includes(currentSearchQuery) || 
+                                      game.category.toLowerCase().includes(currentSearchQuery);
+
+                return matchesCategory && matchesSearch;
+            });
+
+            countBadge.innerText = `${filtered.length} Game${filtered.length === 1 ? '' : 's'} Listed`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(game => {
+                const isFav = game.favorite;
+                const thumbBg = game.thumb ? `url('${game.thumb}')` : null;
+
+                return `
+                    <div class="bg-brand-card border border-brand-border rounded-2xl overflow-hidden card-hover flex flex-col justify-between group">
+                        <!-- Card Header / Cover Art -->
+                        <div class="relative h-40 bg-gradient-to-br from-purple-900/40 via-brand-card to-black flex items-center justify-center overflow-hidden cursor-pointer" onclick="launchGame('${game.id}')">
+                            ${thumbBg ? `<div class="absolute inset-0 bg-cover bg-center opacity-80 group-hover:scale-110 transition-transform duration-500" style="background-image: ${thumbBg}"></div>` : ''}
+                            
+                            <!-- Placeholder Graphic Icon -->
+                            ${!game.thumb ? `
+                                <div class="w-16 h-16 rounded-2xl bg-brand-bg/80 border border-brand-border flex items-center justify-center text-3xl text-brand-neon shadow-lg group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid ${game.icon || 'fa-gamepad'}"></i>
+                                </div>
+                            ` : ''}
+
+                            <div class="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent"></div>
+
+                            <!-- Category Badge -->
+                            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-brand-border text-[10px] font-bold uppercase tracking-wider text-brand-neon">
+                                ${game.category}
+                            </span>
+
+                            <!-- Play Overlay Button -->
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="w-12 h-12 rounded-full bg-brand-neon text-black flex items-center justify-center text-lg shadow-xl font-bold">
+                                    <i class="fa-solid fa-play pl-0.5"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card Info -->
+                        <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold font-orbitron text-white text-base group-hover:text-brand-neon transition-colors truncate">
+                                    ${game.title}
+                                </h3>
+                                <p class="text-xs text-gray-400 mt-1 line-clamp-1">
+                                    ${game.controls || 'Interactive Web Game'}
+                                </p>
+                            </div>
+
+                            <!-- Footer Card Controls -->
+                            <div class="pt-3 border-t border-brand-border/60 flex items-center justify-between">
+                                <button onclick="toggleFavorite('${game.id}')" class="text-gray-400 hover:text-brand-pink transition-colors text-sm flex items-center gap-1.5">
+                                    <i class="${isFav ? 'fa-solid text-brand-pink' : 'fa-regular'} fa-heart"></i>
+                                    <span class="text-[11px]">${isFav ? 'Liked' : 'Like'}</span>
+                                </button>
+
+                                <div class="flex items-center gap-2">
+                                    ${!game.builtIn ? `
+                                        <button onclick="deleteCustomGame('${game.id}')" title="Delete Game" class="p-1.5 rounded-md hover:bg-red-950/50 text-gray-500 hover:text-red-400 transition-colors">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    ` : ''}
+                                    <button onclick="launchGame('${game.id}')" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs font-orbitron transition-all">
+                                        PLAY
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleFavorite(id) {
+            const game = gamesList.find(g => g.id === id);
+            if (game) {
+                game.favorite = !game.favorite;
+                saveGamesToStorage();
+                renderGamesGrid();
+                
+                // Sync hero icon if cyber pong
+                if (id === 'cyber-pong') {
+                    const heroFavIcon = document.getElementById('heroFavIcon');
+                    if (heroFavIcon) {
+                        heroFavIcon.className = game.favorite ? 'fa-solid fa-heart text-brand-pink' : 'fa-regular fa-heart';
+                    }
+                }
+            }
+        }
+
+        function handleAddGame(e) {
+            e.preventDefault();
+            const title = document.getElementById('customTitle').value.trim();
+            const category = document.getElementById('customCategory').value;
+            const icon = document.getElementById('customIcon').value;
+            const url = document.getElementById('customUrl').value.trim();
+            const thumb = document.getElementById('customThumb').value.trim();
+            const controls = document.getElementById('customControls').value.trim();
+
+            if (!title || !url) return;
+
+            const newGame = {
+                id: 'custom-' + Date.now(),
+                title: title,
+                category: category,
+                icon: icon,
+                url: url,
+                thumb: thumb,
+                controls: controls || 'Custom Interactive Controls',
+                builtIn: false,
+                favorite: false
+            };
+
+            gamesList.unshift(newGame);
+            saveGamesToStorage();
+            closeModal('addGameModal');
+            document.getElementById('addGameForm').reset();
+            renderGamesGrid();
+        }
+
+        function deleteCustomGame(id) {
+            if (confirm("Are you sure you want to remove this custom game entry?")) {
+                gamesList = gamesList.filter(g => g.id !== id);
+                saveGamesToStorage();
+                renderGamesGrid();
+            }
+        }
+
+        function exportGameData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gamesList, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `arcade_nexus_config_${Date.now()}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importGameData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        gamesList = imported;
+                        saveGamesToStorage();
+                        renderGamesGrid();
+                        closeModal('importExportModal');
+                        alert("Game configuration successfully imported!");
+                    } else {
+                        alert("Invalid JSON format. Expected an array of game objects.");
+                    }
+                } catch (err) {
+                    alert("Failed to parse JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetToDefaults() {
+            if (confirm("Reset games catalog back to default built-in games?")) {
+                gamesList = [...DEFAULT_GAMES];
+                saveGamesToStorage();
+                renderGamesGrid();
+                closeModal('importExportModal');
+            }
+        }
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.add('flex');
+            }
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            }
+        }
+
+        function launchGame(gameId) {
+            const game = gamesList.find(g => g.id === gameId);
+            if (!game) return;
+
+            currentGame = game;
+            document.getElementById('playerTitle').innerText = game.title;
+            document.getElementById('playerControlsInfo').innerText = game.controls || 'Keyboard / Mouse';
+            document.getElementById('playerBadge').innerText = game.builtIn ? 'Built-In' : 'Custom';
+
+            const canvasViewport = document.getElementById('canvasViewport');
+            const gameIframe = document.getElementById('gameIframe');
+
+            // Stop active canvas loop
+            if (activeAnimFrame) {
+                cancelAnimationFrame(activeAnimFrame);
+                activeAnimFrame = null;
+            }
+
+            if (game.builtIn) {
+                gameIframe.classList.add('hidden');
+                gameIframe.src = 'about:blank';
+                canvasViewport.classList.remove('hidden');
+                startBuiltInGame(game.id);
+            } else {
+                canvasViewport.classList.add('hidden');
+                gameIframe.classList.remove('hidden');
+                gameIframe.src = game.url;
+            }
+
+            openModal('playerModal');
+        }
+
+        function closePlayer() {
+            if (activeAnimFrame) {
+                cancelAnimationFrame(activeAnimFrame);
+                activeAnimFrame = null;
+            }
+            document.getElementById('gameIframe').src = 'about:blank';
+            closeModal('playerModal');
+        }
+
+        function reloadPlayer() {
+            if (currentGame) {
+                launchGame(currentGame.id);
+            }
+        }
+
+        function toggleFullscreen() {
+            const modal = document.getElementById('playerModal');
+            if (!document.fullscreenElement) {
+                modal.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function requestPointerLock() {
+            const canvas = document.getElementById('gameCanvas');
+            canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+            if (canvas.requestPointerLock) {
+                canvas.requestPointerLock();
+            }
+        }
+
+        function openExternalTab() {
+            if (currentGame && currentGame.url) {
+                window.open(currentGame.url, '_blank');
+            }
+        }
+
+        function startBuiltInGame(gameId) {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 800;
+            canvas.height = 500;
+
+            if (gameId === 'cyber-pong') runCyberPong(canvas, ctx);
+            else if (gameId === 'retro-snake') runSnake(canvas, ctx);
+            else if (gameId === 'space-defender') runSpaceDefender(canvas, ctx);
+            else if (gameId === 'neon-breakout') runBreakout(canvas, ctx);
+        }
+
+        /* --- BUILT-IN GAME 1: CYBER PONG --- */
+        function runCyberPong(canvas, ctx) {
+            let paddleH = 80, paddleW = 12;
+            let playerY = canvas.height / 2 - paddleH / 2;
+            let aiY = canvas.height / 2 - paddleH / 2;
+            let ballX = canvas.width / 2, ballY = canvas.height / 2;
+            let ballSpeedX = 6, ballSpeedY = 4;
+            let playerScore = 0, aiScore = 0;
+            let keys = {};
+
+            window.onkeydown = (e) => keys[e.key] = true;
+            window.onkeyup = (e) => keys[e.key] = false;
+
+            function update() {
+                if (keys['w'] || keys['W'] || keys['ArrowUp']) playerY = Math.max(0, playerY - 7);
+                if (keys['s'] || keys['S'] || keys['ArrowDown']) playerY = Math.min(canvas.height - paddleH, playerY + 7);
+
+                // AI Movement
+                let aiCenter = aiY + paddleH / 2;
+                if (aiCenter < ballY - 10) aiY += 4.5;
+                else if (aiCenter > ballY + 10) aiY -= 4.5;
+
+                ballX += ballSpeedX;
+                ballY += ballSpeedY;
+
+                // Bounce Off Top/Bottom
+                if (ballY <= 0 || ballY >= canvas.height) ballSpeedY *= -1;
+
+                // Player Bounce
+                if (ballX <= 25 && ballY >= playerY && ballY <= playerY + paddleH) {
+                    ballSpeedX = Math.abs(ballSpeedX) + 0.2;
+                    let deltaY = ballY - (playerY + paddleH / 2);
+                    ballSpeedY = deltaY * 0.25;
+                }
+
+                // AI Bounce
+                if (ballX >= canvas.width - 25 && ballY >= aiY && ballY <= aiY + paddleH) {
+                    ballSpeedX = -Math.abs(ballSpeedX) - 0.2;
+                }
+
+                // Score Check
+                if (ballX < 0) { aiScore++; resetBall(); }
+                if (ballX > canvas.width) { playerScore++; resetBall(); }
+            }
+
+            function resetBall() {
+                ballX = canvas.width / 2;
+                ballY = canvas.height / 2;
+                ballSpeedX = ballSpeedX > 0 ? -6 : 6;
+                ballSpeedY = (Math.random() - 0.5) * 8;
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw Center Line
+                ctx.strokeStyle = '#232342';
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Draw Scores
+                ctx.font = '32px Orbitron';
+                ctx.fillStyle = '#00f3ff';
+                ctx.fillText(playerScore, canvas.width / 4, 50);
+                ctx.fillStyle = '#ff007f';
+                ctx.fillText(aiScore, (3 * canvas.width) / 4, 50);
+
+                // Draw Paddles
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowColor = '#00f3ff';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(10, playerY, paddleW, paddleH);
+
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+                ctx.fillRect(canvas.width - 22, aiY, paddleW, paddleH);
+
+                // Draw Ball
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            function loop() {
+                update();
+                draw();
+                activeAnimFrame = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        /* --- BUILT-IN GAME 2: RETRO SNAKE --- */
+        function runSnake(canvas, ctx) {
+            let gridSize = 20;
+            let tileCountX = canvas.width / gridSize;
+            let tileCountY = canvas.height / gridSize;
+            let snake = [{x: 10, y: 10}];
+            let dx = 1, dy = 0;
+            let food = {x: 15, y: 15};
+            let score = 0;
+            let lastTime = 0;
+
+            window.onkeydown = (e) => {
+                if ((e.key === 'ArrowUp' || e.key === 'w') && dy === 0) { dx = 0; dy = -1; }
+                if ((e.key === 'ArrowDown' || e.key === 's') && dy === 0) { dx = 0; dy = 1; }
+                if ((e.key === 'ArrowLeft' || e.key === 'a') && dx === 0) { dx = -1; dy = 0; }
+                if ((e.key === 'ArrowRight' || e.key === 'd') && dx === 0) { dx = 1; dy = 0; }
+            };
+
+            function gameStep() {
+                let head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+                // Wall Collision
+                if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
+                    snake = [{x: 10, y: 10}];
+                    score = 0;
+                    dx = 1; dy = 0;
+                    return;
+                }
+
+                // Self Collision
+                for (let part of snake) {
+                    if (part.x === head.x && part.y === head.y) {
+                        snake = [{x: 10, y: 10}];
+                        score = 0;
+                        dx = 1; dy = 0;
+                        return;
+                    }
+                }
+
+                snake.unshift(head);
+
+                // Eat Food
+                if (head.x === food.x && head.y === food.y) {
+                    score += 10;
+                    food = {
+                        x: Math.floor(Math.random() * tileCountX),
+                        y: Math.floor(Math.random() * tileCountY)
+                    };
+                } else {
+                    snake.pop();
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw Food
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(food.x * gridSize + 2, food.y * gridSize + 2, gridSize - 4, gridSize - 4);
+
+                // Draw Snake
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowColor = '#00f3ff';
+                for (let part of snake) {
+                    ctx.fillRect(part.x * gridSize + 1, part.y * gridSize + 1, gridSize - 2, gridSize - 2);
+                }
+                ctx.shadowBlur = 0;
+
+                // Score
+                ctx.font = '20px Orbitron';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(`Score: ${score}`, 20, 35);
+            }
+
+            function loop(timestamp) {
+                if (timestamp - lastTime > 100) {
+                    gameStep();
+                    lastTime = timestamp;
+                }
+                draw();
+                activeAnimFrame = requestAnimationFrame(loop);
+            }
+            loop(0);
+        }
+
+        /* --- BUILT-IN GAME 3: SPACE DEFENDER --- */
+        function runSpaceDefender(canvas, ctx) {
+            let player = { x: canvas.width / 2 - 20, y: canvas.height - 40, w: 40, h: 20, speed: 6 };
+            let bullets = [];
+            let enemies = [];
+            let score = 0;
+            let keys = {};
+
+            window.onkeydown = (e) => {
+                keys[e.key] = true;
+                if (e.code === 'Space') {
+                    bullets.push({ x: player.x + player.w / 2 - 2, y: player.y, w: 4, h: 10 });
+                }
+            };
+            window.onkeyup = (e) => keys[e.key] = false;
+
+            function spawnEnemies() {
+                if (Math.random() < 0.03) {
+                    enemies.push({ x: Math.random() * (canvas.width - 30), y: -30, w: 30, h: 20, speed: 2 });
+                }
+            }
+
+            function update() {
+                if (keys['a'] || keys['A'] || keys['ArrowLeft']) player.x = Math.max(0, player.x - player.speed);
+                if (keys['d'] || keys['D'] || keys['ArrowRight']) player.x = Math.min(canvas.width - player.w, player.x + player.speed);
+
+                // Move Bullets
+                bullets.forEach((b, i) => {
+                    b.y -= 8;
+                    if (b.y < 0) bullets.splice(i, 1);
+                });
+
+                // Move Enemies & Collisions
+                spawnEnemies();
+                enemies.forEach((e, ei) => {
+                    e.y += e.speed;
+
+                    // Bullet Collision
+                    bullets.forEach((b, bi) => {
+                        if (b.x < e.x + e.w && b.x + b.w > e.x && b.y < e.y + e.h && b.y + b.h > e.y) {
+                            enemies.splice(ei, 1);
+                            bullets.splice(bi, 1);
+                            score += 50;
+                        }
+                    });
+
+                    if (e.y > canvas.height) enemies.splice(ei, 1);
+                });
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw Player Ship
+                ctx.fillStyle = '#00f3ff';
+                ctx.shadowColor = '#00f3ff';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(player.x, player.y, player.w, player.h);
+
+                // Draw Bullets
+                ctx.fillStyle = '#ffbe0b';
+                ctx.shadowColor = '#ffbe0b';
+                bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+                // Draw Enemies
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+                enemies.forEach(e => ctx.fillRect(e.x, e.y, e.w, e.h));
+                ctx.shadowBlur = 0;
+
+                // Score
+                ctx.font = '20px Orbitron';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(`SCORE: ${score}`, 20, 35);
+            }
+
+            function loop() {
+                update();
+                draw();
+                activeAnimFrame = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        /* --- BUILT-IN GAME 4: NEON BREAKOUT --- */
+        function runBreakout(canvas, ctx) {
+            let paddleW = 100, paddleH = 12;
+            let paddleX = canvas.width / 2 - paddleW / 2;
+            let ballX = canvas.width / 2, ballY = canvas.height - 50;
+            let ballDX = 4, ballDY = -4;
+            let rowCount = 4, colCount = 8;
+            let brickW = 85, brickH = 20, brickPadding = 10, offsetTop = 50, offsetLeft = 20;
+            let score = 0;
+
+            let bricks = [];
+            for (let r = 0; r < rowCount; r++) {
+                bricks[r] = [];
+                for (let c = 0; c < colCount; c++) {
+                    bricks[r][c] = { x: 0, y: 0, status: 1 };
+                }
+            }
+
+            window.onmousemove = (e) => {
+                let rect = canvas.getBoundingClientRect();
+                paddleX = e.clientX - rect.left - paddleW / 2;
+            };
+
+            function update() {
+                ballX += ballDX;
+                ballY += ballDY;
+
+                // Wall Collisions
+                if (ballX <= 0 || ballX >= canvas.width) ballDX *= -1;
+                if (ballY <= 0) ballDY *= -1;
+
+                // Paddle Collision
+                if (ballY >= canvas.height - 30 && ballX >= paddleX && ballX <= paddleX + paddleW) {
+                    ballDY = -Math.abs(ballDY);
+                }
+
+                // Game Over Reset
+                if (ballY > canvas.height) {
+                    ballX = canvas.width / 2;
+                    ballY = canvas.height - 50;
+                    ballDY = -4;
+                }
+
+                // Brick Collisions
+                for (let r = 0; r < rowCount; r++) {
+                    for (let c = 0; c < colCount; c++) {
+                        let b = bricks[r][c];
+                        if (b.status === 1) {
+                            if (ballX > b.x && ballX < b.x + brickW && ballY > b.y && ballY < b.y + brickH) {
+                                ballDY *= -1;
+                                b.status = 0;
+                                score += 20;
+                            }
+                        }
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw Bricks
+                for (let r = 0; r < rowCount; r++) {
+                    for (let c = 0; c < colCount; c++) {
+                        if (bricks[r][c].status === 1) {
+                            let bx = c * (brickW + brickPadding) + offsetLeft;
+                            let by = r * (brickH + brickPadding) + offsetTop;
+                            bricks[r][c].x = bx;
+                            bricks[r][c].y = by;
+
+                            ctx.fillStyle = r % 2 === 0 ? '#a855f7' : '#00f3ff';
+                            ctx.fillRect(bx, by, brickW, brickH);
+                        }
+                    }
+                }
+
+                // Draw Paddle
+                ctx.fillStyle = '#ff007f';
+                ctx.shadowColor = '#ff007f';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(paddleX, canvas.height - 25, paddleW, paddleH);
+
+                // Draw Ball
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ballX, ballY, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Score
+                ctx.font = '20px Orbitron';
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(`SCORE: ${score}`, 20, 35);
+            }
+
+            function loop() {
+                update();
+                draw();
+                activeAnimFrame = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+    </script>
+</body>
+</html>
